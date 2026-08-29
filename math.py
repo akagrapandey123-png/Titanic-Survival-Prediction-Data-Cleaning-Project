@@ -1,205 +1,458 @@
-import pandas as pd
-import plotly.express as px
-import streamlit as st
-from sklearn.linear_model import LogisticRegression
+import csv
+import math
+import random
 
-# Page configuration
-st.set_page_config(
-    page_title="Titanic Survival Prediction", page_icon="🚢", layout="wide"
+print("=" * 70)
+print("TITANIC SURVIVAL PREDICTION")
+print("Mini Project 1 - Data Cleaning Project")
+print("=" * 70)
+
+print("\nABOUT")
+print("""
+The Titanic dataset contains information about passengers who travelled
+on the RMS Titanic. This project focuses on cleaning the passenger data,
+understanding important features and predicting whether a passenger
+survived the accident.
+
+The target column is Survived.
+0 = Not Survived
+1 = Survived
+""")
+
+try:
+    with open("Titanic-Dataset.csv", "r", encoding="utf-8-sig") as file:
+        reader = csv.DictReader(file)
+        data = list(reader)
+except FileNotFoundError:
+    print("\nTitanic-Dataset.csv was not found.")
+    print("Keep Titanic-Dataset.csv in the same folder as titanic.py.")
+    exit()
+
+print("\nDATASET")
+print("-" * 70)
+print("Rows:", len(data))
+print("Columns:", len(data[0]))
+
+print("\nCOLUMNS")
+for column in data[0].keys():
+    print("-", column)
+
+print("\nCOMPACT VIEW")
+print("-" * 120)
+
+print(
+    f"{'ID':<6}"
+    f"{'Survived':<10}"
+    f"{'Pclass':<8}"
+    f"{'Name':<30}"
+    f"{'Sex':<10}"
+    f"{'Age':<8}"
+    f"{'Ticket':<20}"
 )
 
-# Title and Header
-st.title("🚢 Titanic Survival Analysis & ML Prediction")
-st.markdown("### Mini Project 1 - Data Cleaning & Machine Learning")
+print("-" * 120)
 
-# Primary remote URL
-DATA_URL = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
-
-
-@st.cache_data
-def load_and_clean_data():
-    df = pd.read_csv(DATA_URL)
-
-    # Indian Names Mapping (Strictly Indian Names)
-    male_names = [
-        "Aarav Sharma",
-        "Arjun Mehta",
-        "Rohan Gupta",
-        "Aditya Patel",
-        "Rahul Malhotra",
-        "Vikram Rao",
-        "Karan Shah",
-        "Manish Kumar",
-        "Siddharth Jain",
-        "Varun Bansal",
-        "Devansh Tiwari",
-        "Harsh Vardhan",
-        "Nikhil Verma",
-        "Amitabh Sen",
-        "Pranav Joshi",
-        "Rajat Chauhan",
-        "Sameer Kulkarni",
-        "Yash Singhania",
-        "Ayush Pandey",
-        "Gaurav Saxena",
-    ]
-
-    female_names = [
-        "Ananya Verma",
-        "Diya Kapoor",
-        "Priya Singh",
-        "Sneha Joshi",
-        "Isha Agarwal",
-        "Neha Nair",
-        "Pooja Mishra",
-        "Riya Saxena",
-        "Kavya Reddy",
-        "Anjali Desai",
-        "Tanvi Choudhary",
-        "Meera Nambiar",
-        "Shreya Ghosh",
-        "Pallavi Iyer",
-        "Divya Hegde",
-        "Roshni Bhatia",
-        "Simran Kaur",
-        "Kritika Roy",
-        "Swati Deshmukh",
-        "Payal Mukherjee",
-    ]
-
-    m_idx, f_idx = 0, 0
-    names = []
-    for sex in df["Sex"]:
-        if str(sex).strip().lower() == "female":
-            names.append(female_names[f_idx % len(female_names)])
-            f_idx += 1
-        else:
-            names.append(male_names[m_idx % len(male_names)])
-            m_idx += 1
-    df["Name"] = names
-
-    # Data Cleaning & Missing Value Treatment
-    df["Age"] = df["Age"].fillna(round(df["Age"].mean(), 2))
-    df["Embarked"] = df["Embarked"].fillna("S")
-    df["Cabin"] = df["Cabin"].fillna("Unknown")
-    df["Fare"] = df["Fare"].fillna(0)
-    df["Survival_Status"] = df["Survived"].map(
-        {1: "Survived", 0: "Not Survived"}
+for row in data[:10]:
+    print(
+        f"{row['PassengerId']:<6}"
+        f"{row['Survived']:<10}"
+        f"{row['Pclass']:<8}"
+        f"{row['Name'][:28]:<30}"
+        f"{row['Sex']:<10}"
+        f"{row['Age']:<8}"
+        f"{row['Ticket'][:18]:<20}"
     )
 
-    return df
+print("\nCOLUMN INFORMATION")
+print("-" * 70)
 
+for column in data[0].keys():
 
-df = load_and_clean_data()
+    values = [row[column] for row in data]
 
-# 1. Top Summary KPI Cards
-total_passengers = len(df)
-survived_count = int((df["Survived"] == 1).sum())
-not_survived_count = int((df["Survived"] == 0).sum())
-survival_rate = round((survived_count / total_passengers) * 100, 2)
+    missing = 0
 
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Total Passengers", total_passengers)
-col2.metric("Survived", survived_count)
-col3.metric("Not Survived", not_survived_count)
-col4.metric("Survival Rate", f"{survival_rate}%")
+    for value in values:
+        if value.strip() == "":
+            missing += 1
 
-st.markdown("---")
+    unique_values = len(set(values))
 
-# 2. Interactive Charts & Graphs
-st.subheader("📊 Exploratory Data Analysis")
-
-row1_col1, row1_col2 = st.columns(2)
-
-with row1_col1:
-    fig_gender = px.histogram(
-        df,
-        x="Sex",
-        color="Survival_Status",
-        barmode="group",
-        title="Survival Count by Gender",
-        color_discrete_map={
-            "Survived": "#2ecc71",
-            "Not Survived": "#e74c3c",
-        },
+    print(
+        f"{column:<12}"
+        f"Missing = {missing:<5}"
+        f"Unique = {unique_values}"
     )
-    st.plotly_chart(fig_gender, use_container_width=True)
 
-with row1_col2:
-    fig_pclass = px.histogram(
-        df,
-        x="Pclass",
-        color="Survival_Status",
-        barmode="group",
-        title="Survival Count by Passenger Class",
-        color_discrete_map={
-            "Survived": "#2ecc71",
-            "Not Survived": "#e74c3c",
-        },
-    )
-    st.plotly_chart(fig_pclass, use_container_width=True)
+print("\nMISSING VALUES BEFORE CLEANING")
+print("-" * 70)
 
-fig_age = px.histogram(
-    df,
-    x="Age",
-    color="Survival_Status",
-    nbins=30,
-    title="Age Distribution vs Survival",
-    color_discrete_map={"Survived": "#2ecc71", "Not Survived": "#e74c3c"},
-)
-st.plotly_chart(fig_age, use_container_width=True)
+for column in data[0].keys():
 
-st.markdown("---")
+    missing = 0
 
-# 3. Live ML Prediction Tool
-st.subheader("🤖 Live Passenger Survival Predictor")
+    for row in data:
+        if row[column].strip() == "":
+            missing += 1
 
-# Train Logistic Regression model
-X = df[["Pclass", "Age"]].copy()
-X["Sex_Code"] = df["Sex"].map({"male": 0, "female": 1})
-y = df["Survived"]
+    if missing > 0:
+        print(column, ":", missing)
 
-model = LogisticRegression()
-model.fit(X[["Sex_Code", "Pclass", "Age"]], y)
+indian_names = [
+    "Aarav Sharma",
+    "Ananya Verma",
+    "Arjun Mehta",
+    "Diya Kapoor",
+    "Rohan Gupta",
+    "Priya Singh",
+    "Aditya Patel",
+    "Sneha Joshi",
+    "Rahul Malhotra",
+    "Isha Agarwal",
+    "Vikram Rao",
+    "Neha Nair",
+    "Karan Shah",
+    "Pooja Mishra",
+    "Manish Kumar",
+    "Riya Saxena",
+    "Siddharth Jain",
+    "Kavya Reddy",
+    "Varun Bansal",
+    "Anjali Desai"
+]
 
-pred_c1, pred_c2, pred_c3 = st.columns(3)
+for i, row in enumerate(data):
+    row["Indian_Name"] = indian_names[i % len(indian_names)]
 
-with pred_c1:
-    input_sex = st.selectbox("Select Gender", ["male", "female"])
-with pred_c2:
-    input_pclass = st.selectbox("Select Passenger Class (Pclass)", [1, 2, 3])
-with pred_c3:
-    input_age = st.slider("Select Age", min_value=1, max_value=80, value=25)
-
-if st.button("Predict Survival"):
-    sex_val = 1 if input_sex == "female" else 0
-    pred = model.predict([[sex_val, input_pclass, input_age]])[0]
-    prob = model.predict_proba([[sex_val, input_pclass, input_age]])[0][1]
-
-    if pred == 1:
-        st.success(
-            f"🎉 **Passenger is predicted to SURVIVE!** (Survival Probability: {round(prob * 100, 2)}%)"
-        )
+    if row["Survived"] == "1":
+        row["Survival_Status"] = "Survived"
     else:
-        st.error(
-            f"⚠️ **Passenger is predicted NOT to survive.** (Survival Probability: {round(prob * 100, 2)}%)"
-        )
+        row["Survival_Status"] = "Not Survived"
 
-st.markdown("---")
+age_values = []
 
-# 4. Cleaned Indian Records Table
-st.subheader("📋 Cleaned Indian Passenger Records")
-st.dataframe(
-    df[
-        [
-            "PassengerId",
-            "Name",
-            "Sex",
-            "Age",
-            "Pclass",
-            "Fare",
-            "Survival_Status",
-        ]
-    ],
-    use_container_width=True,
+for row in data:
+    if row["Age"].strip() != "":
+        try:
+            age_values.append(float(row["Age"]))
+        except ValueError:
+            pass
+
+average_age = sum(age_values) / len(age_values)
+
+for row in data:
+
+    if row["Age"].strip() == "":
+        row["Age"] = str(round(average_age, 2))
+
+    if row["Embarked"].strip() == "":
+        row["Embarked"] = "S"
+
+    if row["Fare"].strip() == "":
+        row["Fare"] = "0"
+
+    if row["Cabin"].strip() == "":
+        row["Cabin"] = "Unknown"
+
+print("\nDATA CLEANING COMPLETED")
+print("-" * 70)
+print("Missing Age      -> replaced with average age")
+print("Missing Embarked -> replaced with S")
+print("Missing Fare     -> replaced with 0")
+print("Missing Cabin    -> replaced with Unknown")
+
+print("\nCLEANED COMPACT VIEW")
+print("-" * 120)
+
+print(
+    f"{'ID':<6}"
+    f"{'Indian Name':<20}"
+    f"{'Ticket':<20}"
+    f"{'Sex':<10}"
+    f"{'Age':<8}"
+    f"{'Survival':<15}"
 )
+
+print("-" * 120)
+
+for row in data[:10]:
+
+    print(
+        f"{row['PassengerId']:<6}"
+        f"{row['Indian_Name']:<20}"
+        f"{row['Ticket'][:18]:<20}"
+        f"{row['Sex']:<10}"
+        f"{row['Age']:<8}"
+        f"{row['Survival_Status']:<15}"
+    )
+
+survived = 0
+not_survived = 0
+
+for row in data:
+
+    if row["Survived"] == "1":
+        survived += 1
+    else:
+        not_survived += 1
+
+survival_rate = survived / len(data) * 100
+
+print("\nSURVIVAL ANALYSIS")
+print("-" * 70)
+print("Total Passengers :", len(data))
+print("Survived         :", survived)
+print("Not Survived     :", not_survived)
+print("Survival Rate    :", round(survival_rate, 2), "%")
+
+print("\nGRAPH 1 - SURVIVAL")
+print("-" * 50)
+
+print("Survived     |" + "#" * (survived // 10))
+print("Not Survived |" + "#" * (not_survived // 10))
+
+male_total = 0
+male_survived = 0
+
+female_total = 0
+female_survived = 0
+
+for row in data:
+
+    if row["Sex"] == "male":
+        male_total += 1
+
+        if row["Survived"] == "1":
+            male_survived += 1
+
+    elif row["Sex"] == "female":
+        female_total += 1
+
+        if row["Survived"] == "1":
+            female_survived += 1
+
+print("\nGRAPH 2 - SURVIVAL BY GENDER")
+print("-" * 50)
+
+print("Male")
+print("  Survived     |" + "#" * (male_survived // 10))
+print("  Not Survived |" + "#" * ((male_total - male_survived) // 10))
+
+print("Female")
+print("  Survived     |" + "#" * (female_survived // 10))
+print("  Not Survived |" + "#" * ((female_total - female_survived) // 10))
+
+print("\nGENDER SURVIVAL RATE")
+print("Male   :", round(male_survived / male_total * 100, 2), "%")
+print("Female :", round(female_survived / female_total * 100, 2), "%")
+
+print("\nGRAPH 3 - PASSENGER CLASS")
+print("-" * 50)
+
+for passenger_class in ["1", "2", "3"]:
+
+    total = 0
+    class_survived = 0
+
+    for row in data:
+
+        if row["Pclass"] == passenger_class:
+
+            total += 1
+
+            if row["Survived"] == "1":
+                class_survived += 1
+
+    print(
+        "Class",
+        passenger_class,
+        "|",
+        "#" * (total // 10),
+        "Total:",
+        total,
+        "Survived:",
+        class_survived
+    )
+
+print("\nAGE ANALYSIS")
+print("-" * 70)
+
+child_survived = 0
+child_total = 0
+
+adult_survived = 0
+adult_total = 0
+
+senior_survived = 0
+senior_total = 0
+
+for row in data:
+
+    age = float(row["Age"])
+
+    if age < 18:
+
+        child_total += 1
+
+        if row["Survived"] == "1":
+            child_survived += 1
+
+    elif age < 60:
+
+        adult_total += 1
+
+        if row["Survived"] == "1":
+            adult_survived += 1
+
+    else:
+
+        senior_total += 1
+
+        if row["Survived"] == "1":
+            senior_survived += 1
+
+print("Children :", child_total, "Survived:", child_survived)
+print("Adults   :", adult_total, "Survived:", adult_survived)
+print("Seniors  :", senior_total, "Survived:", senior_survived)
+
+print("\nMACHINE LEARNING")
+print("-" * 70)
+print("Model: Logistic Regression")
+print("Features: Sex, Pclass, Age")
+
+random.seed(42)
+
+weights = [
+    random.uniform(-0.1, 0.1),
+    random.uniform(-0.1, 0.1),
+    random.uniform(-0.1, 0.1),
+    random.uniform(-0.1, 0.1)
+]
+
+def sigmoid(value):
+
+    if value < -500:
+        return 0
+
+    if value > 500:
+        return 1
+
+    return 1 / (1 + math.exp(-value))
+
+def get_features(row):
+
+    sex = 1 if row["Sex"] == "female" else 0
+    pclass = float(row["Pclass"])
+    age = float(row["Age"]) / 100
+
+    return [1, sex, pclass, age]
+
+learning_rate = 0.05
+epochs = 2500
+
+for epoch in range(epochs):
+
+    gradients = [0, 0, 0, 0]
+
+    for row in data:
+
+        x = get_features(row)
+        actual = int(row["Survived"])
+
+        value = 0
+
+        for i in range(4):
+            value += weights[i] * x[i]
+
+        prediction = sigmoid(value)
+        error = prediction - actual
+
+        for i in range(4):
+            gradients[i] += error * x[i]
+
+    for i in range(4):
+        weights[i] -= learning_rate * gradients[i] / len(data)
+
+correct = 0
+
+for row in data:
+
+    x = get_features(row)
+
+    value = 0
+
+    for i in range(4):
+        value += weights[i] * x[i]
+
+    probability = sigmoid(value)
+
+    prediction = 1 if probability >= 0.5 else 0
+
+    if prediction == int(row["Survived"]):
+        correct += 1
+
+accuracy = correct / len(data) * 100
+
+print("Model Accuracy:", round(accuracy, 2), "%")
+
+print("\nSAMPLE PREDICTIONS")
+print("-" * 100)
+
+print(
+    f"{'ID':<6}"
+    f"{'Indian Name':<20}"
+    f"{'Ticket':<18}"
+    f"{'Actual':<16}"
+    f"{'Prediction':<16}"
+)
+
+print("-" * 100)
+
+for row in data[:10]:
+
+    x = get_features(row)
+
+    value = 0
+
+    for i in range(4):
+        value += weights[i] * x[i]
+
+    probability = sigmoid(value)
+
+    prediction = 1 if probability >= 0.5 else 0
+
+    if prediction == 1:
+        predicted_status = "Survived"
+    else:
+        predicted_status = "Not Survived"
+
+    print(
+        f"{row['PassengerId']:<6}"
+        f"{row['Indian_Name']:<20}"
+        f"{row['Ticket'][:16]:<18}"
+        f"{row['Survival_Status']:<16}"
+        f"{predicted_status:<16}"
+    )
+
+print("\nPROJECT SUMMARY")
+print("-" * 70)
+
+print("""
+The Titanic passenger data was successfully loaded and cleaned.
+Missing values were handled using simple data-cleaning techniques.
+
+The project examined passenger survival based on gender, age and
+passenger class. Additional display fields such as Indian Name,
+Survival Status and Ticket were included to make the dataset easier
+to understand.
+
+A Logistic Regression model was implemented using Python to predict
+whether a passenger survived or not.
+
+The project demonstrates data cleaning, exploratory analysis,
+feature preparation and machine learning prediction.
+""")
+
+print("=" * 70)
+print("PROJECT COMPLETED SUCCESSFULLY")
+print("=" * 70)

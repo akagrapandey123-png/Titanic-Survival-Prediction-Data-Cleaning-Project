@@ -20,8 +20,8 @@ The target column is Survived.
 1 = Survived
 """)
 
-# User: Please update this path to your CSV file in Google Drive
-csv_file_path = './titanic.csv' # Corrected path based on !ls output
+
+csv_file_path = './titanic.csv'
 
 try:
     df = pd.read_csv(csv_file_path)
@@ -73,7 +73,7 @@ print("-" * 70)
 
 for column in data[0].keys():
 
-    values = [str(row[column]) for row in data] # Convert to string for consistent handling of missing values
+    values = [str(row[column]) for row in data] 
 
     missing = 0
 
@@ -97,7 +97,7 @@ for column in data[0].keys():
     missing = 0
 
     for row in data:
-        if str(row[column]).strip() == "": # Convert to string for consistent handling
+        if str(row[column]).strip() == "": 
             missing += 1
 
     if missing > 0:
@@ -129,7 +129,7 @@ indian_names = [
 for i, row in enumerate(data):
     row["Indian_Name"] = indian_names[i % len(indian_names)]
 
-    if str(row["Survived"]) == "1": # Ensure comparison with string
+    if str(row["Survived"]) == "1": 
         row["Survival_Status"] = "Survived"
     else:
         row["Survival_Status"] = "Not Survived"
@@ -137,7 +137,7 @@ for i, row in enumerate(data):
 age_values = []
 
 for row in data:
-    if str(row["Age"]).strip() != "": # Convert to string for consistent handling
+    if str(row["Age"]).strip() != "": 
         try:
             age_values.append(float(row["Age"]))
         except ValueError:
@@ -147,16 +147,16 @@ average_age = sum(age_values) / len(age_values)
 
 for row in data:
 
-    if str(row["Age"]).strip() == "": # Convert to string for consistent handling
+    if str(row["Age"]).strip() == "": 
         row["Age"] = str(round(average_age, 2))
 
-    if str(row["Embarked"]).strip() == "": # Convert to string for consistent handling
+    if str(row["Embarked"]).strip() == "": 
         row["Embarked"] = "S"
 
-    if str(row["Fare"]).strip() == "": # Convert to string for consistent handling
+    if str(row["Fare"]).strip() == "": 
         row["Fare"] = "0"
 
-    if str(row["Cabin"]).strip() == "": # Convert to string for consistent handling
+    if str(row["Cabin"]).strip() == "": 
         row["Cabin"] = "Unknown"
 
 print("\nDATA CLEANING COMPLETED")
@@ -196,8 +196,7 @@ not_survived = 0
 
 for row in data:
 
-    if str(row["Survived"]) == "1": # Ensure comparison with string
-        survived += 1
+    if str(row["Survived"]) == "1": 
     else:
         not_survived += 1
 
@@ -224,16 +223,16 @@ female_survived = 0
 
 for row in data:
 
-    if str(row["Sex"]) == "male": # Ensure comparison with string
+    if str(row["Sex"]) == "male": 
         male_total += 1
 
-        if str(row["Survived"]) == "1": # Ensure comparison with string
+        if str(row["Survived"]) == "1": 
             male_survived += 1
 
-    elif str(row["Sex"]) == "female": # Ensure comparison with string
+    elif str(row["Sex"]) == "female": 
         female_total += 1
 
-        if str(row["Survived"]) == "1": # Ensure comparison with string
+        if str(row["Survived"]) == "1": 
             female_survived += 1
 
 print("\nGRAPH 2 - SURVIVAL BY GENDER")
@@ -261,11 +260,11 @@ for passenger_class in ["1", "2", "3"]:
 
     for row in data:
 
-        if str(row["Pclass"]) == passenger_class: # Ensure comparison with string
+        if str(row["Pclass"]) == passenger_class:
 
             total += 1
 
-            if str(row["Survived"]) == "1": # Ensure comparison with string
+            if str(row["Survived"]) == "1": 
                 class_survived += 1
 
     print(
@@ -299,21 +298,21 @@ for row in data:
 
         child_total += 1
 
-        if str(row["Survived"]) == "1": # Ensure comparison with string
+        if str(row["Survived"]) == "1": 
             child_survived += 1
 
     elif age < 60:
 
         adult_total += 1
 
-        if str(row["Survived"]) == "1": # Ensure comparison with string
+        if str(row["Survived"]) == "1": 
             adult_survived += 1
 
     else:
 
         senior_total += 1
 
-        if str(row["Survived"]) == "1": # Ensure comparison with string
+        if str(row["Survived"]) == "1": 
             senior_survived += 1
 
 print("Children :", child_total, "Survived:", child_survived)
@@ -346,7 +345,7 @@ def sigmoid(value):
 
 def get_features(row):
 
-    sex = 1 if str(row["Sex"]) == "female" else 0 # Ensure comparison with string
+    sex = 1 if str(row["Sex"]) == "female" else 0 
     pclass = float(row["Pclass"])
     age = float(row["Age"]) / 100
 
@@ -362,7 +361,7 @@ for epoch in range(epochs):
     for row in data:
 
         x = get_features(row)
-        actual = int(str(row["Survived"])) # Ensure conversion from string
+        actual = int(str(row["Survived"])) 
 
         value = 0
 
